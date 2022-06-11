@@ -34,6 +34,10 @@ def get_movies(diff) -> list:
                 "genre": genre.strip(),
             }
         )
+    for movie in movies:
+            if movie["title"].isdigit():
+                index = movies.index(movie)
+                movies.remove(movies[index])
     return movies
 
 
@@ -73,7 +77,7 @@ def get_total(url) -> int:
     """Gets the total number of movies that fit the query parameters
 
     Args:
-        url (str): 
+        url (str):
 
     Returns:
         int: returns the total movies that can be scraped
