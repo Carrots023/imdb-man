@@ -248,6 +248,16 @@ def get_alpha(title):
 
 
 def update_scoreboard(name, score, filename):
+    """Stores the player's name and score in the scoreboard
+
+    Args:
+        name (str): player's name
+        score (int): player's final score
+        filename (str): filename of the scoreboard
+
+    Returns:
+        list: returns a list of dictionary, sorted by score, descending, with column for ranking
+    """
     new_row = {
         'name': name,
         'score': score
