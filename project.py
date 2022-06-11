@@ -1,4 +1,10 @@
+from rich.console import Console
+
+import scraper
 import os
+
+
+console = Console()
 
 # A str that acts as a divider
 DIV = "~" * 20
@@ -33,19 +39,37 @@ def main():
 
     # Show the difficulty levels
     print(DIV + DIF + DIV)
-    
+
     # Ask the player to pick a difficulty level
     while True:
         try:
             get_diff = input("Now pick: ")
             if validate_diff(get_diff):
+                diff = int(get_diff)
                 break
             else:
-                print(DIV, "See the numbers inside the square brackets? Let's try again.", DIV, sep="\n")
+                print(
+                    DIV,
+                    "See the numbers inside the square brackets? Let's try again.",
+                    DIV,
+                    sep="\n",
+                )
         except:
-            print(DIV, "See the numbers inside the square brackets? Let's try again.", DIV, sep="\n")
+            print(
+                DIV,
+                "See the numbers inside the square brackets? Let's try again.",
+                DIV,
+                sep="\n",
+            )
 
-    print("TODO")
+    # Gather movie data
+    clear()
+    with console.status("Gathering movies for you. Stay still...", spinner="arrow3"):
+        movies = scraper.get_movies(diff)
+        for movie in movies:
+            if movie["title"].isdigit():
+                index = movies.index(movie)
+                movies.remove(movies[index])
 
 
 def validate_name(name):
@@ -70,7 +94,7 @@ def validate_diff(get_diff):
         get_diff (str): player's difficulty input
 
     Raises:
-        ValueError: Will occur if player entered a non-integer input
+        ValueError: will occur if player entered a non-integer input
 
     Returns:
         bool: returns True if player's input is either 1, 2, or 3, else return False
@@ -85,8 +109,7 @@ def validate_diff(get_diff):
 
 
 def clear():
-    """Clears the terminal window
-    """
+    """Clears the terminal window"""
     os.system("clear||cls")
 
 
