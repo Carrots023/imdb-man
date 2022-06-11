@@ -1,0 +1,4 @@
+rich
+tabulate
+beautifulsoup4
+pytest
