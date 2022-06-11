@@ -33,14 +33,14 @@ SCOREBOARD = "scoreboard.csv"
 def main():
     while True:
         # Clear the terminal window and greet the player
-        clear()
-        print("🎥 Welcome to [IMDb]Man!~~ 🎥", DIV, sep="\n")
+        os.system("clear||cls")
+        print("🎥 ~~ Welcome to [IMDb]Man! ~~ 🎥", DIV, sep="\n")
 
         # Ask the player's name
         while True:
             name = input("Tell me your name: ").strip()
             if validate_name(name):
-                clear()
+                os.system("clear||cls")
                 print(f"Hello, {name}! Choose the game's difficulty.")
                 break
             else:
@@ -77,9 +77,14 @@ def main():
                 )
 
         # Gather movie data
-        clear()
+        os.system("clear||cls")
         with console.status("Gathering movies for you. Stay still...", spinner="arrow3"):
             movies_raw = scraper.get_movies(diff)
+            for movie in movies_raw:
+                if movie["title"].isdigit():
+                    index = movies_raw.index(movie)
+                    movies_raw.remove(movies_raw[index])
+        
         movies = random.sample(movies_raw, 200)
 
 
@@ -118,7 +123,7 @@ def main():
                 with console.status("Proceeding to the next round. Please wait...", spinner="dots2"):
                     time.sleep(5)
         if len(movies) == 0:
-            clear()
+            os.system("clear||cls")
             print("You have guessed all the movies in this session. Congratulations!", DIV, sep="\n")
             sorted_scoreboard = update_scoreboard(name, total_score, SCOREBOARD)
             header = ['Ranking', 'Username', 'Total Score']
@@ -184,7 +189,7 @@ def game_area(movies, round):
     Returns:
         dict: returns a dict which consists of the round's title to be guessed, remaining lives, score, and index of the guessed movie
     """
-    clear()
+    os.system("clear||cls")
     round_movie = random.choice(movies)
     title, year, genre = round_movie['title'], round_movie['year'], round_movie['genre']
     life = MAX_LIFE
@@ -193,7 +198,7 @@ def game_area(movies, round):
     goal = len(alpha_text)
     score = 0
     while True:
-        clear()
+        os.system("clear||cls")
         print(DIV, f"Round {round}", f"Year: {year}", f"Genre: {genre}", DIV, sep="\n")
         print("Title: ", end="")
         for char in title.upper():
@@ -270,15 +275,11 @@ def update_scoreboard(name, score, filename):
         reader = csv.DictReader(r_file)
         for row in reader:
             scores.append(row)
-    sorted_scores = sorted(scores, key=lambda score: score['score'])
+    sorted_scores = sorted(scores, key=lambda score: int(score['score']), reverse=True)
     for row in sorted_scores:
         i = sorted_scores.index(row)
         row['rank'] = i + 1
     return sorted_scores
-
-def clear():
-    """Clears the terminal window"""
-    os.system("clear||cls")
 
 
 if __name__ == "__main__":
