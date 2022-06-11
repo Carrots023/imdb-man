@@ -79,7 +79,7 @@ def get_total(url) -> int:
     """Gets the total number of movies that fit the query parameters
 
     Args:
-        url (str):
+        url (str): the url of IMDb.com with the query parameters
 
     Returns:
         int: returns the total movies that can be scraped
