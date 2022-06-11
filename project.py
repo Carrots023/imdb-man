@@ -1,9 +1,13 @@
 from rich.console import Console
+from tabulate import tabulate
 
 import scraper
 import os
 import random
 import re
+import csv
+import sys
+import time
 
 console = Console()
 
@@ -27,62 +31,112 @@ SCOREBOARD = "scoreboard.csv"
 
 
 def main():
-    # Clear the terminal window and greet the player
-    clear()
-    print("🎥 Welcome to [IMDb]Man!~~ 🎥", DIV, sep="\n")
-
-    # Ask the player's name
     while True:
-        name = input("Tell me your name: ").strip()
-        if validate_name(name):
-            clear()
-            print(f"Hello, {name}! Choose the game's difficulty.")
-            break
-        else:
-            print(
-                DIV,
-                "Your name should be 4 to 10 characters long and only consist of alphanumeric characters. I'll ask you again.",
-                DIV,
-                sep="\n",
-            )
+        # Clear the terminal window and greet the player
+        clear()
+        print("🎥 Welcome to [IMDb]Man!~~ 🎥", DIV, sep="\n")
 
-    # Show the difficulty levels
-    print(DIV + DIF + DIV)
-
-    # Ask the player to pick a difficulty level
-    while True:
-        try:
-            get_diff = input("Now pick: ")
-            if validate_diff(get_diff):
-                diff = int(get_diff)
+        # Ask the player's name
+        while True:
+            name = input("Tell me your name: ").strip()
+            if validate_name(name):
+                clear()
+                print(f"Hello, {name}! Choose the game's difficulty.")
                 break
             else:
+                print(
+                    DIV,
+                    "Your name should be 4 to 10 characters long and only consist of alphanumeric characters. I'll ask you again.",
+                    DIV,
+                    sep="\n",
+                )
+
+        # Show the difficulty levels
+        print(DIV + DIF + DIV)
+
+        # Ask the player to pick a difficulty level
+        while True:
+            try:
+                get_diff = input("Now pick: ")
+                if validate_diff(get_diff):
+                    diff = int(get_diff)
+                    break
+                else:
+                    print(
+                        DIV,
+                        "See the numbers inside the square brackets? Let's try again.",
+                        DIV,
+                        sep="\n",
+                    )
+            except:
                 print(
                     DIV,
                     "See the numbers inside the square brackets? Let's try again.",
                     DIV,
                     sep="\n",
                 )
-        except:
-            print(
-                DIV,
-                "See the numbers inside the square brackets? Let's try again.",
-                DIV,
-                sep="\n",
-            )
 
-    # Gather movie data
-    clear()
-    with console.status("Gathering movies for you. Stay still...", spinner="arrow3"):
-        movies_raw = scraper.get_movies(diff)
+        # Gather movie data
+        clear()
+        with console.status("Gathering movies for you. Stay still...", spinner="arrow3"):
+            movies_raw = scraper.get_movies(diff)
         movies = random.sample(movies_raw, 200)
 
 
-    total_score = 0
-    round = 1
-    while len(movies) != 0:
-        round_stats = game_area(movies, round)
-
+        total_score = 0
+        round = 1
+        while len(movies) != 0:
+            round_stats = game_area(movies, round)
+            if round_stats['life'] == 0:
+                print(DIV, f"Correct Answer: {round_stats['answer']}", sep="\n")
+                print("~~~~~Game Over!~~~~~")
+                print(f"Final Score: {total_score}", DIV, sep="\n")
+                sorted_scoreboard = update_scoreboard(name, total_score, SCOREBOARD)
+                header = ['Ranking', 'Username', 'Total Score']
+                score_table = []
+                for tr in sorted_scoreboard:
+                    td = [tr['rank'], tr['name'], tr['score']]
+                    score_table.append(td)
+                print(tabulate(score_table, headers=header, tablefmt="grid"))
+                print(DIV)
+                while True:
+                    prompt_new_game = input("New Game? [Y/N]:").upper()
+                    if prompt_new_game in ["Y", "YES"]:
+                        break
+                    elif prompt_new_game in ["N", "NO"]:
+                        print(DIV, "Understandable. Have a great day!", DIV, sep="\n")
+                        sys.exit()
+                    else:
+                        print(DIV, "Invalid Input. Try again.", DIV, sep="\n")
+                break
+            else:
+                total_score += round_stats['score'] * diff
+                round += 1
+                movies.remove(movies[round_stats['index']])
+                print(DIV, "~~Congratulations!~~", sep="\n")
+                print(f"Total Score: {total_score}", DIV, sep="\n")
+                with console.status("Proceeding to the next round. Please wait...", spinner="dots2"):
+                    time.sleep(5)
+        if len(movies) == 0:
+            clear()
+            print("You have guessed all the movies in this session. Congratulations!", DIV, sep="\n")
+            sorted_scoreboard = update_scoreboard(name, total_score, SCOREBOARD)
+            header = ['Ranking', 'Username', 'Total Score']
+            score_table = []
+            for tr in sorted_scoreboard:
+                td = [tr['rank'], tr['name'], tr['score']]
+                score_table.append(td)
+            print(tabulate(score_table, headers=header, tablefmt="grid"))
+            print(DIV)
+            while True:
+                prompt_new_game = input("New Game? [Y/N]:").upper()
+                if prompt_new_game in ["Y", "YES"]:
+                    break
+                elif prompt_new_game in ["N", "NO"]:
+                    print(DIV, "Understandable. Have a great day!", DIV, sep="\n")
+                    sys.exit()
+                else:
+                    print(DIV, "Invalid Input. Try again.", DIV, sep="\n")
 
 def validate_name(name):
     """Validates the player's name
@@ -180,7 +234,6 @@ def game_area(movies, round):
     }
 
 
-
 def get_alpha(title):
     """Removes non-alphabetic characters from a string"
 
@@ -190,9 +243,28 @@ def get_alpha(title):
     Returns:
         list: returns a list of all letters in the title
     """
-    regex = re.compile("A-Z")
+    regex = re.compile("[A-Z]")
     return regex.findall(title.upper())
 
+
+def update_scoreboard(name, score, filename):
+    new_row = {
+        'name': name,
+        'score': score
+    }
+    with open(filename, 'a') as a_file:
+        writer = csv.DictWriter(a_file, fieldnames=['name', 'score'])
+        writer.writerow(new_row)
+    scores = []
+    with open(filename, 'r') as r_file:
+        reader = csv.DictReader(r_file)
+        for row in reader:
+            scores.append(row)
+    sorted_scores = sorted(scores, key=lambda score: score['score'])
+    for row in sorted_scores:
+        i = sorted_scores.index(row)
+        row['rank'] = i + 1
+    return sorted_scores
 
 def clear():
     """Clears the terminal window"""
