@@ -15,12 +15,15 @@ def get_movies(diff) -> list:
         list: returns a list of dictionary with the following keys: 'title', 'year', and 'genre'
     """
     q = get_params(diff)
+    # Make a web query and return the number of movies that fit the query parameters
     url = f"https://www.imdb.com/search/title/?title_type=feature&user_rating={q['min_rating']},{q['max_rating']}&num_votes={q['min_votes']},{q['max_votes']}&count=250"
     total = get_total(url)
     start = random.randint(1, total - 249)
+    # Get all the movies from a web query (max titles per page is 250)
     movie_url = f"https://www.imdb.com/search/title/?title_type=feature&user_rating={q['min_rating']},{q['max_rating']}&num_votes={q['min_votes']},{q['max_votes']}&count=250&start={start}"
     movie_link = requests.get(movie_url)
     movie_soup = BeautifulSoup(movie_link.text, "lxml")
+    # Scrape the title, release year, and genre of the gathered movies
     movie_html = movie_soup.find_all("div", class_="lister-item mode-advanced")
     movies = []
     for movie_list in movie_html:
@@ -34,10 +37,6 @@ def get_movies(diff) -> list:
                 "genre": genre.strip(),
             }
         )
-    for movie in movies:
-            if movie["title"].isdigit():
-                index = movies.index(movie)
-                movies.remove(movies[index])
     return movies
 
 
@@ -50,6 +49,7 @@ def get_params(d) -> dict:
     Returns:
         dict: returns query parameters depending on the player's chosen difficulty level
     """
+    # For easy difficulty, query movies with high rating and votes
     if d == 1:
         return {
             "min_rating": 5,
@@ -57,6 +57,7 @@ def get_params(d) -> dict:
             "min_votes": 100000,
             "max_votes": 10000000,
         }
+    # For normal difficulty, query movies with medium rating and votes
     elif d == 2:
         return {
             "min_rating": 2.5,
@@ -64,6 +65,7 @@ def get_params(d) -> dict:
             "min_votes": 50000,
             "max_votes": 100000,
         }
+    # For hard difficulty, query movies with low rating and votes
     else:
         return {
             "min_rating": 1,
@@ -82,6 +84,7 @@ def get_total(url) -> int:
     Returns:
         int: returns the total movies that can be scraped
     """
+    # Make a web query and return the number of movies that fit the query parameters
     link = requests.get(url)
     soup = BeautifulSoup(link.text, "lxml")
     total_text = soup.find("div", class_="desc").text
