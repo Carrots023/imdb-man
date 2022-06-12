@@ -134,7 +134,7 @@ def main():
                     print(DIV, "Invalid Input. Try again.", DIV, sep="\n")
 
 
-def validate_name(name):
+def validate_name(name) -> bool:
     """Validates the player's name
 
     Args:
@@ -150,7 +150,7 @@ def validate_name(name):
         return False
 
 
-def validate_diff(get_diff):
+def validate_diff(get_diff) -> bool:
     """Validates the player's difficulty input
 
     Args:
@@ -172,7 +172,7 @@ def validate_diff(get_diff):
         raise ValueError
 
 
-def game_area(movies, round):
+def game_area(movies, round) -> dict:
     """Executes the game
 
     Args:
@@ -238,7 +238,7 @@ def game_area(movies, round):
     }
 
 
-def get_alpha(title):
+def get_alpha(title) -> list:
     """Removes non-alphabetic characters from a string"
 
     Args:
@@ -252,7 +252,7 @@ def get_alpha(title):
     return regex.findall(title.upper())
 
 
-def update_scoreboard(name, score, filename):
+def update_scoreboard(name, score, filename) -> list:
     """Stores the player's name and score in the scoreboard
 
     Args:
