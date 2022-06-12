@@ -1,5 +1,5 @@
 # IMDb-Man
-#### Video Demo: TODO
+#### Video Demo: [https://youtu.be/C_0hZQj-UH4](https://youtu.be/C_0hZQj-UH4)
 ## Description
 IMDb-Man is my final project for CS50's Introduction to Programming with Python. This project is inspired by the popular kid's game, Hangman, but the words to be guessed are scraped from IMDb.com using BeautifulSoup.
 
@@ -131,4 +131,3 @@ def get_total(url) -> int:
 
 **Returns:**
 - ```int```: returns the total movies that can be scraped
-
